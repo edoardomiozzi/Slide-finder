@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Union
 from datetime import datetime
 
 app = FastAPI(title="Slide Finder API", description="API per ricerca semantica slide")
@@ -60,8 +60,18 @@ def search_slides(query, limit=None):
     
     return results
 
-# Il tuo endpoint esistente
-@app.get("/search", response_model=list[SlideOut])
+# Root endpoint per health check
+@app.get("/")
+async def root():
+    return {
+        "message": "Slide Finder API is running",
+        "endpoints": ["/search", "/power-automate-webhook"],
+        "total_slides": len(slides),
+        "timestamp": datetime.now().isoformat()
+    }
+
+# Il tuo endpoint esistente - FIX per Python 3.8 compatibility
+@app.get("/search")
 def search(query: str = Query(...)):
     results = search_slides(query)
     return [
@@ -75,7 +85,7 @@ def search(query: str = Query(...)):
     ]
 
 # NUOVO ENDPOINT per Power Automate
-@app.post("/power-automate-webhook", response_model=PowerAutomateResponse)
+@app.post("/power-automate-webhook")
 async def power_automate_webhook(request: PowerAutomateRequest):
     """
     Endpoint per integrazione con Power Automate
@@ -152,13 +162,3 @@ async def power_automate_webhook(request: PowerAutomateRequest):
             success=False,
             error=f"Errore interno: {str(e)}"
         )
-
-# Root endpoint per health check
-@app.get("/")
-async def root():
-    return {
-        "message": "Slide Finder API is running",
-        "endpoints": ["/search", "/power-automate-webhook"],
-        "total_slides": len(slides),
-        "timestamp": datetime.now().isoformat()
-    }
