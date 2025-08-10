@@ -20,7 +20,7 @@ slides = [
     {"id": 1, "title": "Cost Optimization in Logistics", "content": "Reducing distribution center costs", "link": "https://company.sharepoint.com/slides/1"},
     {"id": 2, "title": "Strategic Growth in Country A", "content": "Growth levers and EBITDA impact", "link": "https://company.sharepoint.com/slides/2"},
     {"id": 3, "title": "Inventory Management Best Practices", "content": "Lowering inventory levels", "link": "https://company.sharepoint.com/slides/3"},
-    # Aggiungi qui altre slide se vuoi
+
 ]
 
 # MODEL
