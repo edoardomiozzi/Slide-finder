@@ -6,7 +6,7 @@ from datetime import datetime
 
 app = FastAPI(title="Slide Finder API", description="API per ricerca semantica slide")
 
-# CORS per Power Automate
+# POWER AUTOMATE
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,7 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# I tuoi dati esistenti (aggiungi altre slide qui se vuoi)
+# FAKE DATA
 slides = [
     {"id": 1, "title": "Cost Optimization in Logistics", "content": "Reducing distribution center costs", "link": "https://company.sharepoint.com/slides/1"},
     {"id": 2, "title": "Strategic Growth in Country A", "content": "Growth levers and EBITDA impact", "link": "https://company.sharepoint.com/slides/2"},
@@ -23,7 +23,7 @@ slides = [
     # Aggiungi qui altre slide se vuoi
 ]
 
-# I tuoi modelli esistenti
+# MODEL
 class SlideOut(BaseModel):
     id: int
     title: str
@@ -31,7 +31,7 @@ class SlideOut(BaseModel):
     link: str
     score: float
 
-# NUOVI MODELLI per Power Automate
+# MODELS 4 POW AUT
 class PowerAutomateRequest(BaseModel):
     action: str
     query: Optional[str] = None
@@ -45,7 +45,7 @@ class PowerAutomateResponse(BaseModel):
     error: Optional[str] = None
     message: Optional[str] = None
 
-# La tua funzione esistente
+# FUNCTION
 def search_slides(query, limit=None):
     results = []
     for s in slides:
@@ -60,7 +60,7 @@ def search_slides(query, limit=None):
     
     return results
 
-# Root endpoint per health check
+# Root endpoint
 @app.get("/")
 async def root():
     return {
@@ -70,7 +70,7 @@ async def root():
         "timestamp": datetime.now().isoformat()
     }
 
-# Il tuo endpoint esistente - FIX per Python 3.8 compatibility
+# EX END-POINT
 @app.get("/search")
 def search(query: str = Query(...)):
     results = search_slides(query)
@@ -84,7 +84,7 @@ def search(query: str = Query(...)):
         ) for s, score in results
     ]
 
-# NUOVO ENDPOINT per Power Automate
+# ENDPOINT 4 POW AUT
 @app.post("/power-automate-webhook")
 async def power_automate_webhook(request: PowerAutomateRequest):
     """
@@ -99,10 +99,10 @@ async def power_automate_webhook(request: PowerAutomateRequest):
                     error="Query richiesta per la ricerca"
                 )
             
-            # Usa la tua funzione esistente
+            # EX FUNCTION
             search_results = search_slides(request.query, request.top_k)
             
-            # Formato per Power Automate
+            # Format POW AUT
             pa_results = []
             for slide, score in search_results:
                 pa_results.append({
@@ -122,43 +122,4 @@ async def power_automate_webhook(request: PowerAutomateRequest):
             )
             
         elif request.action == "index":
-            # Logica per aggiungere nuove slide
-            if not request.slides:
-                return PowerAutomateResponse(
-                    success=False,
-                    error="Nessuna slide fornita per l'indicizzazione"
-                )
             
-            # Aggiungi le nuove slide alla lista esistente
-            indexed_count = 0
-            for new_slide in request.slides:
-                # Genera nuovo ID
-                new_id = max([s["id"] for s in slides]) + 1 if slides else 1
-                
-                slide_data = {
-                    "id": new_id,
-                    "title": new_slide.get("title", "Titolo non disponibile"),
-                    "content": new_slide.get("content", ""),
-                    "link": new_slide.get("sharepoint_url", new_slide.get("link", ""))
-                }
-                
-                slides.append(slide_data)
-                indexed_count += 1
-            
-            return PowerAutomateResponse(
-                success=True,
-                totalResults=indexed_count,
-                message=f"Indicizzate {indexed_count} slide con successo"
-            )
-            
-        else:
-            return PowerAutomateResponse(
-                success=False,
-                error=f"Azione non supportata: {request.action}. Usa 'search' o 'index'"
-            )
-            
-    except Exception as e:
-        return PowerAutomateResponse(
-            success=False,
-            error=f"Errore interno: {str(e)}"
-        )
